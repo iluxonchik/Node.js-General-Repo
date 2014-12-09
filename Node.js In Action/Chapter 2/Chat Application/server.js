@@ -2,6 +2,7 @@ var http = require('http'); // HTTP client and server functionality
 var fs = require('fs'); // filesystem-related functionality
 var path = require('path'); // filesystem path-related functionality
 var mime = require('mime'); // derive a MIME based on filename extension
+var chatServer = require('./lib/chat_server');
 
 var cache = {}
 
@@ -20,6 +21,10 @@ var server = http.createServer(function(request, response) {
 server.listen(3000, function() {
   console.log("Server listening on port 3000.");
 })
+
+// Start Socket.IO server functionality, providing an existing HTTP server,
+// so that the same TCP/IP port can be shared
+chatServer.listen(server);
 
 function send404(response) {
   // NOTE: that way "404" can be sent to multiple responses
@@ -43,7 +48,7 @@ function serveStatic(response, cache, absPath) {
   } else {
     fs.exists(absPath, function(exists) {
       if(exists) {
-        fs.readFile(absPath, function(err, dada) {
+        fs.readFile(absPath, function(err, data) {
           if (err) {
             send404(response);
           } else {
